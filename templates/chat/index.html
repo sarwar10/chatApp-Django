@@ -1,0 +1,38 @@
+{% extends "chat/base.html" %}
+
+
+{% block body %}
+
+<div class="container">
+
+    <div class="row justify-content-center my-4">
+
+        <div class="col-lg-6  py-4 border my-4 bg-light">
+            <h4 class="bg-dark text-light text-center py-2 ">Join Chat Room</h4>
+            <div class="form-group px-2 py-4">
+
+                
+                <input id="room-name-input" type="text" class="form-control" placeholder="Type Chatroom" size="100"><br>
+                <input id="room-name-submit" type="button" class="btn btn-primary" value="Enter">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function (e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/chat/' + roomName + '/';
+        };
+    </script>
+
+
+</div>
+</div>
+{% endblock %}

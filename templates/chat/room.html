@@ -1,0 +1,90 @@
+<!-- chat/templates/chat/room.html -->
+{% extends "chat/base.html" %}
+
+{% load static %}
+
+
+{% block body %}
+
+<div class="row justify-content-center mx-1" id="row-container">
+
+    <div class="col-md-12   py-2 my-2 " id="chat-container">
+        <div id="chat-log" class="mx-0" style="height: 70vh;overflow-y: auto;">
+
+
+        </div><br>
+        <div class="row">
+            <div class="col-lg-9 px-2 py-2">
+                <input id="chat-message-input" class="form-control" placeholder="Type message" type="text" size="100">
+            </div>
+            <div class="col-lg-3 px-2 py-2"> <input id="chat-message-submit" class="btn btn-primary" type="button" value="Send">
+            </div>
+            {{ room_name|json_script:"room-name" }}
+        </div>
+    </div>
+</div>
+
+<script>
+    var myDiv = document.getElementById("chat-log");
+
+    function updateScroll() {
+        myDiv.scrollTop = myDiv.scrollHeight;
+    }
+
+    // Call the updateScroll function whenever new content is added to the div
+    myDiv.addEventListener("DOMNodeInserted", updateScroll);
+
+
+
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+
+        list_message = document.querySelector('#chat-log');
+
+        if (data.sender == '{{user.username}}') {
+            list_message.innerHTML += "<p class='py-2 px-2 rounded text-end text-white ' style='float:right;background-color:darkviolet;  width:75%; font-size:20px;'><small>" + data.sender + "</small> : " + data.message + "</p>";
+        }
+        else {
+
+
+            list_message.innerHTML += "<p class=' py-2 px-2 rounded text-right text-white' style='float:left;background-color:hotpink; width:75%; font-size:20px;' ><small>" + data.sender + "</small> : " + data.message + "</p>";
+        }
+
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        const sender = '{{user.username}}';
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'sender': sender
+        }));
+        messageInputDom.value = '';
+    };
+    
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+{% endblock %}
